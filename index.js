@@ -28,7 +28,7 @@ app.use('/middleware-token', authenticateToken, (req, res) => {
 
 app.get('/car_info', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM car_info');
+    const result = await database.query('SELECT * FROM car_info');
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching data from PostgreSQL', err);
