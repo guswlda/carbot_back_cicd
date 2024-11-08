@@ -26,9 +26,13 @@ app.use('/middleware-token', authenticateToken, (req, res) => {
   res.send('미들웨어 토큰 연결');
 });
 
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
+
 app.get('/car_info', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM car_info');
+    const result = await database.query('SELECT * FROM car_info');
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching data from PostgreSQL', err);
