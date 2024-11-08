@@ -7,7 +7,6 @@ WORKDIR /usr/src/app
 # 패키지 파일 복사
 COPY package.json ./
 
-
 # 종속성 설치
 RUN npm install
 
