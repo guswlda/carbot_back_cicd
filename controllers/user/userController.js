@@ -410,7 +410,7 @@ const getCustomerConsult = async (req, res) => {
     const consultations = consultationsResult.rows.map((row, index) => ({
       no: index + 1, // 번호
       car_model: "GV80 coupe", // 차량 모델 (통일된 값)
-      dealer_name: "애쉬 아일랜드", // 담당자 (통일된 값)
+      dealer_name: "김준호 딜러", // 담당자 (통일된 값)
       created_at: new Date(row.created_at).toLocaleDateString(), // 신청 날짜
       consult_process: row.consult_process, // 상태
     }));
