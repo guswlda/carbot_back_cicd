@@ -16,7 +16,7 @@ app.use(cookieParser()); // cookie-parser 미들웨어 추가
 
 app.use(
   cors({
-    origin: 'http://localhost:3001',
+    origin: 'http://222.112.27.120:3001',
     credentials: true,
   })
 );
