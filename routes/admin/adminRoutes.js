@@ -1,4 +1,4 @@
-const router = require('express').Router();
+const router = require("express").Router();
 
 const {
   custom_car,
@@ -8,16 +8,16 @@ const {
   addNotice,
   reNotice,
   deleteNotice,
-  consultUsers,
-} = require('../../controllers/admin/adminController');
+  getNotices,
+} = require("../../controllers/admin/adminController");
 
-router.post('/custom_car', custom_car);
-router.get('/all_users', allUsers);
-router.get('/detail/:customer_id', detailUser);
-router.get('/check_mycar', mycarTF);
-router.post('/add_notice/:admin_id', addNotice);
-router.patch('/re_notice/:admin_id', reNotice);
-router.patch('/del_notice/:admin_id', deleteNotice);
-router.get('/consult_users', consultUsers);
+router.post("/custom_car", custom_car);
+router.get("/all_users", allUsers);
+router.get("/detail/:customer_id", detailUser);
+router.get("/check_mycar", mycarTF);
+router.post("/add_notice", addNotice);
+router.patch("/re_notice/:admin_id/:notice_no", reNotice);
+router.patch("/del_notice/:admin_id/:notice_no", deleteNotice);
+router.get("/admin_notices", getNotices);
 
 module.exports = router;

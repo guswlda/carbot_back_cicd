@@ -1,4 +1,4 @@
-const database = require('../../database/database');
+const database = require("../../database/database");
 
 const custom_car = async (req, res) => {
   try {
@@ -10,7 +10,7 @@ const custom_car = async (req, res) => {
       [customer_no, car_info_no, make, model, year, car_type]
     );
 
-    res.status(201).json({ message: 'Customer car added successfully' });
+    res.status(201).json({ message: "Customer car added successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -40,7 +40,7 @@ const detailUser = async (req, res) => {
     if (result.rows.length > 0) {
       res.status(200).json({ user: result.rows[0] }); // 해당 사용자 정보 반환
     } else {
-      res.status(404).json({ message: 'User not found' }); // 해당 사용자 없을 시
+      res.status(404).json({ message: "User not found" }); // 해당 사용자 없을 시
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -52,7 +52,7 @@ const mycarTF = async (req, res) => {
   const { customer_no, customer_car } = req.query;
 
   try {
-    if (customer_car === 'true') {
+    if (customer_car === "true") {
       // 고객이 차량을 소유하고 있는 경우 차량 정보 조회
       const carResult = await database.query(
         `SELECT make, model, year, car_type, created_at 
@@ -60,7 +60,7 @@ const mycarTF = async (req, res) => {
         [customer_no]
       );
       res.status(200).json({ carInfo: carResult.rows });
-    } else if (customer_car === 'false') {
+    } else if (customer_car === "false") {
       // 고객이 차량을 소유하지 않은 경우 선호도 정보 조회
       const preferenceResult = await database.query(
         `SELECT preferred_make, preferred_type, created_at 
@@ -69,7 +69,7 @@ const mycarTF = async (req, res) => {
       );
       res.status(200).json({ preferenceInfo: preferenceResult.rows });
     } else {
-      res.status(400).json({ message: 'Invalid value for customer_car' });
+      res.status(400).json({ message: "Invalid value for customer_car" });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -78,89 +78,110 @@ const mycarTF = async (req, res) => {
 
 // 공지사항 추가
 const addNotice = async (req, res) => {
-  const { admin_id } = req.params; // URL에서 admin_id 추출
-  const { notice_title, notice_content } = req.body;
+  const { admin_id, notice_title, notice_category, notice_content } = req.body;
 
   try {
-    // 1. admin_id로 admin_no 조회
+    // admin_id로 admin_no 조회
     const adminResult = await database.query(
-      `SELECT admin_no FROM admins WHERE admin_id = $1`,
+      `SELECT admin_no FROM admins WHERE admin_id = $1 AND status = TRUE`,
       [admin_id]
     );
 
     if (adminResult.rows.length === 0) {
-      return res.status(404).json({ message: 'Admin not found' });
+      return res.status(404).json({ message: "Admin not found" });
     }
 
     const admin_no = adminResult.rows[0].admin_no;
 
-    // 2. 공지사항 추가
+    // 공지사항 추가
     await database.query(
-      `INSERT INTO notice (admin_no, notice_title, notice_content, created_at)
-       VALUES ($1, $2, $3, NOW())`,
-      [admin_no, notice_title, notice_content]
+      `INSERT INTO notice (admin_no, notice_title, notice_category, notice_content, created_at)
+       VALUES ($1, $2, $3, $4, NOW())`,
+      [admin_no, notice_title, notice_category, notice_content]
     );
 
-    res.status(201).json({ message: 'Notice added successfully' });
+    res.status(201).json({ message: "Notice added successfully" });
   } catch (error) {
+    console.error("Error adding notice:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
 
 // 공지사항 수정
 const reNotice = async (req, res) => {
-  const { admin_id } = req.params; // URL에서 admin_id 추출
-  const { notice_title, notice_content } = req.body;
+  const { admin_id, notice_no } = req.params; // URL 파라미터에서 admin_id와 notice_no 추출
+  const { userType, notice_title, notice_content, notice_category } = req.body; // 요청 본문에서 데이터 추출
+
+  // 관리자 권한 확인
+  if (userType !== "admin") {
+    return res
+      .status(403)
+      .json({ message: "관리자만 공지사항을 수정할 수 있습니다." });
+  }
+
+  // 필수 필드 확인
+  if (!notice_title || !notice_content || !notice_category) {
+    return res.status(400).json({
+      message:
+        "필수 항목이 누락되었습니다. notice_title, notice_content, notice_category를 모두 제공해야 합니다.",
+    });
+  }
 
   try {
-    // 1. admin_id로 admin_no 조회
+    // admin_id로 admin_no 조회
     const adminResult = await database.query(
-      `SELECT admin_no FROM admins WHERE admin_id = $1`,
+      `SELECT admin_no FROM admins WHERE admin_id = $1 AND status = TRUE`,
       [admin_id]
     );
 
     if (adminResult.rows.length === 0) {
-      return res.status(404).json({ message: 'Admin not found' });
+      return res.status(404).json({ message: "Admin not found" });
     }
 
     const admin_no = adminResult.rows[0].admin_no;
 
-    // 2. admin_no를 통해 공지사항 업데이트
-    await database.query(
+    // 공지사항 수정
+    const result = await database.query(
       `UPDATE notice 
-       SET notice_title = $1, notice_content = $2, updated_at = NOW()
-       WHERE admin_no = $3`,
-      [notice_title, notice_content, admin_no]
+       SET notice_title = $1, notice_content = $2, notice_category = $3, updated_at = NOW()
+       WHERE admin_no = $4 AND notice_no = $5`,
+      [notice_title, notice_content, notice_category, admin_no, notice_no]
     );
 
-    res.status(200).json({ message: 'Notice updated successfully' });
+    if (result.rowCount === 0) {
+      return res
+        .status(404)
+        .json({ message: "Notice not found or not authorized" });
+    }
+
+    res.status(200).json({ message: "Notice updated successfully" });
   } catch (error) {
+    console.error("Error updating notice:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
 
 // 공지사항 삭제(상태 값 변경)
 const deleteNotice = async (req, res) => {
-  const { admin_id } = req.params;
-  const { notice_no } = req.body; // 삭제할 notice_no를 요청 본문에서 가져옴
+  const { admin_id, notice_no } = req.params; // URL 파라미터에서 admin_id와 notice_no 추출
 
   try {
-    // 1. admin_id로 admin_no 조회
+    // admin_id로 admin_no 조회
     const adminResult = await database.query(
-      `SELECT admin_no FROM admins WHERE admin_id = $1`,
+      `SELECT admin_no FROM admins WHERE admin_id = $1 AND status = TRUE`,
       [admin_id]
     );
 
     if (adminResult.rows.length === 0) {
-      return res.status(404).json({ message: 'Admin not found' });
+      return res.status(404).json({ message: "Admin not found" });
     }
 
     const admin_no = adminResult.rows[0].admin_no;
 
-    // 2. admin_no와 notice_no로 공지사항 상태 업데이트
+    // 공지사항 삭제 (상태 변경)
     const result = await database.query(
       `UPDATE notice 
-       SET notice_status = FALSE 
+       SET status = FALSE 
        WHERE admin_no = $1 AND notice_no = $2`,
       [admin_no, notice_no]
     );
@@ -168,36 +189,40 @@ const deleteNotice = async (req, res) => {
     if (result.rowCount === 0) {
       return res
         .status(404)
-        .json({ message: 'Notice not found or not authorized' });
+        .json({ message: "Notice not found or not authorized" });
     }
 
-    res.status(200).json({ message: 'Notice marked as deleted' });
+    res.status(200).json({ message: "Notice marked as deleted" });
   } catch (error) {
+    console.error("Error deleting notice:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
 
-// 관리자 상담관리
-const consultUsers = async (req, res) => {
+// 관리자 상담관리 - 조회
+const getNotices = async (req, res) => {
   try {
     const result = await database.query(
       `SELECT 
-    car_consult_custom.custom_consult_no, 
-    customers.customer_name, 
-    dealers.dealer_name, 
-    car_consult_custom.created_at, 
-    customers.status 
-    FROM 
-        car_consult_custom
-    LEFT JOIN 
-        dealers USING (custom_consult_no) 
-    LEFT JOIN 
-        customers USING (customer_no)
-        ORDER BY custom_consult_no ASC;;
-       ;`
+        notice.notice_no, 
+        notice.notice_title, 
+        admins.admin_id AS admin_name, -- admin_id를 admin_name으로 사용
+        notice.created_at
+      FROM 
+        notice
+      JOIN 
+        admins 
+      ON 
+        notice.admin_no = admins.admin_no
+      WHERE 
+        notice.status = TRUE
+      ORDER BY 
+        notice.created_at DESC;`
     );
-    res.status(200).json({ users: result.rows });
+
+    res.status(200).json({ notices: result.rows });
   } catch (error) {
+    console.error("Error fetching notices:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -210,5 +235,5 @@ module.exports = {
   addNotice,
   reNotice,
   deleteNotice,
-  consultUsers,
+  getNotices,
 };
