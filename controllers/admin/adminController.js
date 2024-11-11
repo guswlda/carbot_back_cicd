@@ -79,6 +79,7 @@ const mycarTF = async (req, res) => {
 // 공지사항 추가
 const addNotice = async (req, res) => {
   const { admin_id, notice_title, notice_category, notice_content } = req.body;
+  console.log("Received data:", req.body); // 디버깅용 로그 추가
 
   try {
     // admin_id로 admin_no 조회
@@ -110,14 +111,7 @@ const addNotice = async (req, res) => {
 // 공지사항 수정
 const reNotice = async (req, res) => {
   const { admin_id, notice_no } = req.params; // URL 파라미터에서 admin_id와 notice_no 추출
-  const { userType, notice_title, notice_content, notice_category } = req.body; // 요청 본문에서 데이터 추출
-
-  // 관리자 권한 확인
-  if (userType !== "admin") {
-    return res
-      .status(403)
-      .json({ message: "관리자만 공지사항을 수정할 수 있습니다." });
-  }
+  const { notice_title, notice_content, notice_category } = req.body; // 요청 본문에서 데이터 추출
 
   // 필수 필드 확인
   if (!notice_title || !notice_content || !notice_category) {
@@ -128,14 +122,16 @@ const reNotice = async (req, res) => {
   }
 
   try {
-    // admin_id로 admin_no 조회
+    // admin_id로 admin_no와 userType 조회
     const adminResult = await database.query(
       `SELECT admin_no FROM admins WHERE admin_id = $1 AND status = TRUE`,
       [admin_id]
     );
 
     if (adminResult.rows.length === 0) {
-      return res.status(404).json({ message: "Admin not found" });
+      return res
+        .status(403)
+        .json({ message: "관리자 권한이 없거나 존재하지 않는 관리자입니다." });
     }
 
     const admin_no = adminResult.rows[0].admin_no;
@@ -205,8 +201,10 @@ const getNotices = async (req, res) => {
     const result = await database.query(
       `SELECT 
         notice.notice_no, 
-        notice.notice_title, 
-        admins.admin_id AS admin_name, -- admin_id를 admin_name으로 사용
+        notice.notice_title,
+        notice.notice_content,
+        notice.notice_category,
+        admins.admin_id AS admin_name,
         notice.created_at
       FROM 
         notice
