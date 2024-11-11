@@ -195,7 +195,7 @@ const deleteNotice = async (req, res) => {
   }
 };
 
-// 관리자 상담관리 - 조회
+// 관리자 공지사항 조회
 const getNotices = async (req, res) => {
   try {
     const result = await database.query(
@@ -225,6 +225,33 @@ const getNotices = async (req, res) => {
   }
 };
 
+// 관리자 상담 내역 조회
+const getConsult = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+          ccc.custom_consult_no,
+          cust.customer_name,
+          dlr.dealer_name,
+          ch.consult_content,
+          ch.created_at
+      FROM car_consult_custom ccc
+      LEFT JOIN customers cust ON ccc.customer_no = cust.customer_no
+      LEFT JOIN dealers dlr ON ccc.dealer_no = dlr.dealer_no
+      LEFT JOIN consult_hist ch ON ccc.custom_consult_no = ch.custom_consult_no
+      WHERE ccc.status = TRUE
+      ORDER BY ch.created_at DESC;
+    `;
+    const result = await database.query(query);
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error fetching consultations:", error);
+    res
+      .status(500)
+      .json({ error: "상담 목록을 가져오는 중 오류가 발생했습니다." });
+  }
+};
+
 module.exports = {
   custom_car,
   allUsers,
@@ -234,4 +261,5 @@ module.exports = {
   reNotice,
   deleteNotice,
   getNotices,
+  getConsult,
 };
