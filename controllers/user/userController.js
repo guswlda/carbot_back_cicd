@@ -486,6 +486,28 @@ const getCustomerConsult = async (req, res) => {
   }
 };
 
+// 공지사항 조회
+const getUserNotices = async (req, res) => {
+  try {
+    const result = await database.query(
+      `SELECT notice_title, notice_content, created_at, notice_category
+       FROM notice
+       WHERE status = true
+       ORDER BY created_at DESC`
+    );
+
+    if (result.rows.length > 0) {
+      res.status(200).json({ success: true, notices: result.rows });
+    } else {
+      res.status(404).json({ success: false, message: "공지사항이 없습니다." });
+    }
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ success: false, message: "데이터베이스 오류가 발생했습니다." });
+  }
+};
+
+
 module.exports = {
   signUp,
   allLogin,
@@ -499,4 +521,5 @@ module.exports = {
   getCustomerConsult,
   getUserEmail,
   cumstomEdit,
+  getUserNotices
 };
