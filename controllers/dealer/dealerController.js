@@ -65,7 +65,7 @@ const getDealerConsults = async (req, res) => {
       JOIN customers cust
       ON ccc.customer_no = cust.customer_no
       WHERE ccc.dealer_no = $1
-      ORDER BY ccc.created_at DESC;
+      ORDER BY ccc.updated_at DESC;
     `;
 
     const result = await database.query(query, [dealerId]);
