@@ -1,4 +1,4 @@
-const database = require("../../database/database");
+const database = require('../../database/database');
 
 const custom_car = async (req, res) => {
   try {
@@ -10,7 +10,7 @@ const custom_car = async (req, res) => {
       [customer_no, car_info_no, make, model, year, car_type]
     );
 
-    res.status(201).json({ message: "Customer car added successfully" });
+    res.status(201).json({ message: 'Customer car added successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -40,7 +40,7 @@ const detailUser = async (req, res) => {
     if (result.rows.length > 0) {
       res.status(200).json({ user: result.rows[0] }); // 해당 사용자 정보 반환
     } else {
-      res.status(404).json({ message: "User not found" }); // 해당 사용자 없을 시
+      res.status(404).json({ message: 'User not found' }); // 해당 사용자 없을 시
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -52,7 +52,7 @@ const mycarTF = async (req, res) => {
   const { customer_no, customer_car } = req.query;
 
   try {
-    if (customer_car === "true") {
+    if (customer_car === 'true') {
       // 고객이 차량을 소유하고 있는 경우 차량 정보 조회
       const carResult = await database.query(
         `SELECT make, model, year, car_type, created_at 
@@ -60,7 +60,7 @@ const mycarTF = async (req, res) => {
         [customer_no]
       );
       res.status(200).json({ carInfo: carResult.rows });
-    } else if (customer_car === "false") {
+    } else if (customer_car === 'false') {
       // 고객이 차량을 소유하지 않은 경우 선호도 정보 조회
       const preferenceResult = await database.query(
         `SELECT preferred_make, preferred_type, created_at 
@@ -69,7 +69,7 @@ const mycarTF = async (req, res) => {
       );
       res.status(200).json({ preferenceInfo: preferenceResult.rows });
     } else {
-      res.status(400).json({ message: "Invalid value for customer_car" });
+      res.status(400).json({ message: 'Invalid value for customer_car' });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -79,7 +79,7 @@ const mycarTF = async (req, res) => {
 // 공지사항 추가
 const addNotice = async (req, res) => {
   const { admin_id, notice_title, notice_category, notice_content } = req.body;
-  console.log("Received data:", req.body); // 디버깅용 로그 추가
+  console.log('Received data:', req.body); // 디버깅용 로그 추가
 
   try {
     // admin_id로 admin_no 조회
@@ -89,7 +89,7 @@ const addNotice = async (req, res) => {
     );
 
     if (adminResult.rows.length === 0) {
-      return res.status(404).json({ message: "Admin not found" });
+      return res.status(404).json({ message: 'Admin not found' });
     }
 
     const admin_no = adminResult.rows[0].admin_no;
@@ -101,9 +101,9 @@ const addNotice = async (req, res) => {
       [admin_no, notice_title, notice_category, notice_content]
     );
 
-    res.status(201).json({ message: "Notice added successfully" });
+    res.status(201).json({ message: 'Notice added successfully' });
   } catch (error) {
-    console.error("Error adding notice:", error.message);
+    console.error('Error adding notice:', error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -117,7 +117,7 @@ const reNotice = async (req, res) => {
   if (!notice_title || !notice_content || !notice_category) {
     return res.status(400).json({
       message:
-        "필수 항목이 누락되었습니다. notice_title, notice_content, notice_category를 모두 제공해야 합니다.",
+        '필수 항목이 누락되었습니다. notice_title, notice_content, notice_category를 모두 제공해야 합니다.',
     });
   }
 
@@ -131,7 +131,7 @@ const reNotice = async (req, res) => {
     if (adminResult.rows.length === 0) {
       return res
         .status(403)
-        .json({ message: "관리자 권한이 없거나 존재하지 않는 관리자입니다." });
+        .json({ message: '관리자 권한이 없거나 존재하지 않는 관리자입니다.' });
     }
 
     const admin_no = adminResult.rows[0].admin_no;
@@ -147,12 +147,12 @@ const reNotice = async (req, res) => {
     if (result.rowCount === 0) {
       return res
         .status(404)
-        .json({ message: "Notice not found or not authorized" });
+        .json({ message: 'Notice not found or not authorized' });
     }
 
-    res.status(200).json({ message: "Notice updated successfully" });
+    res.status(200).json({ message: 'Notice updated successfully' });
   } catch (error) {
-    console.error("Error updating notice:", error.message);
+    console.error('Error updating notice:', error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -169,7 +169,7 @@ const deleteNotice = async (req, res) => {
     );
 
     if (adminResult.rows.length === 0) {
-      return res.status(404).json({ message: "Admin not found" });
+      return res.status(404).json({ message: 'Admin not found' });
     }
 
     const admin_no = adminResult.rows[0].admin_no;
@@ -185,12 +185,12 @@ const deleteNotice = async (req, res) => {
     if (result.rowCount === 0) {
       return res
         .status(404)
-        .json({ message: "Notice not found or not authorized" });
+        .json({ message: 'Notice not found or not authorized' });
     }
 
-    res.status(200).json({ message: "Notice marked as deleted" });
+    res.status(200).json({ message: 'Notice marked as deleted' });
   } catch (error) {
-    console.error("Error deleting notice:", error.message);
+    console.error('Error deleting notice:', error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -220,7 +220,7 @@ const getNotices = async (req, res) => {
 
     res.status(200).json({ notices: result.rows });
   } catch (error) {
-    console.error("Error fetching notices:", error.message);
+    console.error('Error fetching notices:', error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -252,19 +252,20 @@ const getConsult = async (req, res) => {
 
     res.status(200).json(consultations);
   } catch (error) {
-    console.error("Error fetching consultations:", error);
+    console.error('Error fetching consultations:', error);
     res
       .status(500)
-      .json({ error: "상담 목록을 가져오는 중 오류가 발생했습니다." });
+      .json({ error: '상담 목록을 가져오는 중 오류가 발생했습니다.' });
   }
 };
 
 // 딜러 관리
 const allDealers = async (req, res) => {
   try {
-    // 딜러 번호, 이름, 핸드폰 번호
     const result = await database.query(
-      `SELECT dealer_no, dealer_name, dealer_phone, created_at, status FROM dealers`
+      `SELECT dealer_no, dealer_id, dealer_name, dealer_phone, created_at, status 
+      FROM dealers
+      ORDER BY updated_at DESC;`
     );
     res.status(200).json({ users: result.rows });
   } catch (error) {
@@ -272,22 +273,26 @@ const allDealers = async (req, res) => {
   }
 };
 
-const updateDealerPhone = async (req, res) => {
+// 딜러 정보 수정 - 아이디와 핸드폰 번호
+const updateDealerInfo = async (req, res) => {
   const { dealer_no } = req.params; // 딜러 번호로 식별
-  const { dealer_phone } = req.body; // 새로운 핸드폰 번호
+  const { dealer_phone, dealer_id } = req.body; // 새로운 핸드폰 번호와 아이디
 
   try {
     const result = await database.query(
-      `UPDATE dealers SET dealer_phone = $1 WHERE dealer_no = $2 RETURNING dealer_no, dealer_phone, dealer_name, status`,
-      [dealer_phone, dealer_no]
+      `UPDATE dealers 
+       SET dealer_phone = $1, dealer_id = $2 
+       WHERE dealer_no = $3 
+       RETURNING dealer_no, dealer_id, dealer_phone, dealer_name, status`,
+      [dealer_phone, dealer_id, dealer_no]
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Dealer not found" });
+      return res.status(404).json({ error: 'Dealer not found' });
     }
 
     res.status(200).json({
-      message: "Dealer phone number updated successfully",
+      message: 'Dealer info updated successfully',
       dealer: result.rows[0], // 변경된 딜러 정보를 반환
     });
   } catch (error) {
@@ -306,5 +311,5 @@ module.exports = {
   getNotices,
   getConsult,
   allDealers,
-  updateDealerPhone,
+  updateDealerInfo,
 };

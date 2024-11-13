@@ -11,7 +11,7 @@ const {
   getNotices,
   getConsult,
   allDealers,
-  updateDealerPhone,
+  updateDealerInfo,
 } = require('../../controllers/admin/adminController');
 
 router.post('/custom_car', custom_car);
@@ -22,7 +22,7 @@ router.get('/check_mycar', mycarTF);
 router.post('/add_notice', addNotice);
 router.patch('/re_notice/:admin_id/:notice_no', reNotice);
 router.patch('/del_notice/:admin_id/:notice_no', deleteNotice);
-router.patch('/update_dealer_phone/:dealer_no', updateDealerPhone);
+router.patch('/update_dealer_info/:dealer_no', updateDealerInfo);
 router.get('/admin_notices', getNotices);
 router.get('/get_consult', getConsult);
 
