@@ -391,9 +391,8 @@ const getUserEmail = async (req, res) => {
 const submitConsultRequest = async (req, res) => {
   const { userId, consult_content } = req.body;
 
-  // 유효성 검사: 필수 데이터가 있는지 확인
   if (!userId || !consult_content) {
-    console.log("Invalid request body:", req.body); // 유효성 검사 실패 시 body 출력
+    console.log("Invalid request body:", req.body);
     return res
       .status(400)
       .json({ error: "userId와 consult_content는 필수 항목입니다." });
@@ -401,25 +400,20 @@ const submitConsultRequest = async (req, res) => {
 
   try {
     // 1. userId로 customer_no 조회
-    console.log("Looking up customer_no for userId:", userId); // userId 출력
     const customerResult = await database.query(
       `SELECT customer_no FROM customers WHERE customer_id = $1 AND status = true`,
       [userId]
     );
 
-    // 고객이 없을 경우 에러 반환
     if (customerResult.rows.length === 0) {
-      console.log("No customer found for userId:", userId); // 조회 결과 없음
       return res
         .status(404)
         .json({ error: "해당 userId를 가진 고객을 찾을 수 없습니다." });
     }
 
     const customer_no = customerResult.rows[0].customer_no;
-    console.log("Found customer_no:", customer_no); // 조회된 customer_no 출력
 
-    // 2. car_consult_custom에 consult_content 삽입
-    console.log("Inserting consult_content for customer_no:", customer_no);
+    // 2. 상담 내용을 car_consult_custom 테이블에 삽입
     const insertResult = await database.query(
       `INSERT INTO car_consult_custom (customer_no, custom_content)
        VALUES ($1, $2)
@@ -427,12 +421,23 @@ const submitConsultRequest = async (req, res) => {
       [customer_no, consult_content]
     );
 
-    console.log("Insert successful:", insertResult.rows[0]); // 삽입된 데이터 출력
+    const consultData = insertResult.rows[0];
 
-    // 3. 삽입된 데이터 반환
-    res.status(201).json(insertResult.rows[0]);
+    // 3. 딜러 정보 조회 (예: 임의로 딜러를 배정)
+    const dealerResult = await database.query(
+      `SELECT dealer_name FROM dealers WHERE dealer_no = 1 AND status = true`
+    );
+
+    const dealerName =
+      dealerResult.rows.length > 0 ? dealerResult.rows[0].dealer_name : "미정";
+
+    // 4. 상담 데이터와 딜러 이름 반환
+    res.status(201).json({
+      ...consultData,
+      dealerName: dealerName,
+    });
   } catch (error) {
-    console.error("Error submitting consult request:", error); // 에러 로그 출력
+    console.error("Error submitting consult request:", error);
     res
       .status(500)
       .json({ error: "구매 상담 신청 처리 중 오류가 발생했습니다." });
