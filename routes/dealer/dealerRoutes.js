@@ -20,5 +20,6 @@ router.put("/consult_hist/:consult_hist_no", updateConsultMemo);
 router.get("/customer_info/:customerNo", getCustomerInfo);
 router.get("/consult_details/:consultNo", getConsultDetails);
 router.get("/memo/:consultNo", getMemo);
+router.put("/process_complete/:consultNo", processComplete);
 
 module.exports = router;
