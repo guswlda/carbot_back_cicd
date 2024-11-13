@@ -444,14 +444,12 @@ const submitConsultRequest = async (req, res) => {
   }
 };
 
-// 마이페이지 내 상담 내역 조회
 const getCustomerConsult = async (req, res) => {
-  const { userId } = req.params; // userId를 요청 파라미터로 받음
+  const { userId } = req.params;
 
   try {
-    // 1. userId로 customer_no 조회
     const customerResult = await database.query(
-      `SELECT customer_no FROM customers WHERE customer_id = $1`,
+      `SELECT customer_no FROM customers WHERE customer_id = $1 AND status = true`,
       [userId]
     );
 
@@ -463,11 +461,11 @@ const getCustomerConsult = async (req, res) => {
 
     const customerNo = customerResult.rows[0].customer_no;
 
-    // 2. customer_no로 car_consult_custom 테이블 데이터 조회
     const consultationsResult = await database.query(
       `SELECT custom_consult_no, created_at, consult_process 
        FROM car_consult_custom 
-       WHERE customer_no = $1`,
+       WHERE customer_no = $1 AND status = true
+       ORDER BY created_at DESC`,
       [customerNo]
     );
 
@@ -475,16 +473,15 @@ const getCustomerConsult = async (req, res) => {
       return res.json([]); // 데이터가 없는 경우 빈 배열 반환
     }
 
-    // 3. 데이터 가공
     const consultations = consultationsResult.rows.map((row, index) => ({
-      no: index + 1, // 번호
-      car_model: "GV80 coupe", // 차량 모델 (통일된 값)
-      dealer_name: "김준호 딜러", // 담당자 (통일된 값)
-      created_at: new Date(row.created_at).toLocaleDateString(), // 신청 날짜
-      consult_process: row.consult_process, // 상태
+      no: index + 1,
+      car_model: "GV80 coupe", // 예시 차량 모델
+      dealer_name: "김준호 딜러", // 예시 담당자
+      created_at: new Date(row.created_at).toLocaleDateString(),
+      consult_process: row.consult_process,
     }));
 
-    return res.json(consultations); // 결과 반환
+    return res.json(consultations);
   } catch (error) {
     console.error("Error fetching consultations:", error);
     return res.status(500).json({ error: "서버 오류가 발생했습니다." });
